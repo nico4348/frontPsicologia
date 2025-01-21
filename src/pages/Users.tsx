@@ -74,7 +74,7 @@ export default function Users() {
 
 	const queryBd = async (searchQuery: string) => {
 		try {
-			const response = await axios.get(`http://localhost:3000/v1/user/${searchQuery}`)
+			const response = await axios.get(`http://localhost:3000/v1/front/user/${searchQuery}`)
 			return response.data
 		} catch (error) {
 			console.error(error)
