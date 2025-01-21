@@ -2,24 +2,25 @@ import { useState } from 'react'
 import SearchBar from '../components/SearchBar'
 import { Phone, Mail, Calendar, User2, Clock } from 'lucide-react'
 import type { User, Appointment } from '../types'
+import axios from 'axios'
 
-const sampleUser: User = {
-	idUsuario: '1',
-	nombre: 'María',
-	apellido: 'González',
-	correo: 'maria.gonzalez@email.com',
-	telefonoPersonal: '3001234567',
-	documento: '1234567890',
-	tipoDocumento: 'CC',
-	testActual: 'ghq12',
-	motivo: 'Ansiedad y estrés laboral',
-	ayudaPsicologica: 1,
-	tratDatos: true,
-	flujo: 'register',
-	sesion: 3,
-	estado: true,
-	disponibilidad: {},
-}
+// const sampleUser: User = {
+// 	idUsuario: '1',
+// 	nombre: 'María',
+// 	apellido: 'González',
+// 	correo: 'maria.gonzalez@email.com',
+// 	telefonoPersonal: '3001234567',
+// 	documento: '1234567890',
+// 	tipoDocumento: 'CC',
+// 	testActual: 'ghq12',
+// 	motivo: 'Ansiedad y estrés laboral',
+// 	ayudaPsicologica: 1,
+// 	tratDatos: true,
+// 	flujo: 'register',
+// 	sesion: 3,
+// 	estado: true,
+// 	disponibilidad: {},
+// }
 
 const sampleAppointments: Appointment[] = [
 	{
@@ -71,11 +72,25 @@ export default function Users() {
 	const [user, setUser] = useState<User | null>(null)
 	const [appointments, setAppointments] = useState<Appointment[]>([])
 
+	const queryBd = async (searchQuery: string) => {
+		try {
+			const response = await axios.get(`http://localhost:3000/v1/user/${searchQuery}`)
+			return response.data
+		} catch (error) {
+			console.error(error)
+			return null
+		}
+	}
+
 	const handleSearch = async () => {
-		// Simulando búsqueda con datos de ejemplo
-		if (searchQuery === '1234567890') {
-			setUser(sampleUser)
+		console.log(searchQuery)
+		const userData = await queryBd(searchQuery)
+		if (userData) {
+			setUser(userData)
 			setAppointments(sampleAppointments)
+		} else {
+			setUser(null)
+			setAppointments([])
 		}
 	}
 

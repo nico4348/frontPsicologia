@@ -76,7 +76,7 @@ export default function Practitioners() {
 
 	const queryBd = async (searchQuery: string) => {
 		try {
-			const response = await axios.get(`http://localhost:3000/v1/query/${searchQuery}`)
+			const response = await axios.get(`http://localhost:3000/v1/practicante/${searchQuery}`)
 			return response.data
 		} catch (error) {
 			console.error(error)
