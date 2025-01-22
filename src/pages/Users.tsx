@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import SearchBar from '../components/SearchBar'
+import UserForm from '../components/UserForm'
 import { Phone, Mail, Calendar, User2, Clock } from 'lucide-react'
 import type { User, Appointment } from '../types'
 import axios from 'axios'
@@ -71,6 +72,7 @@ export default function Users() {
 	const [searchQuery, setSearchQuery] = useState('')
 	const [user, setUser] = useState<User | null>(null)
 	const [appointments, setAppointments] = useState<Appointment[]>([])
+	const [isEditing, setIsEditing] = useState(false)
 
 	const queryBd = async (searchQuery: string) => {
 		try {
@@ -83,7 +85,6 @@ export default function Users() {
 	}
 
 	const handleSearch = async () => {
-		console.log(searchQuery)
 		const userData = await queryBd(searchQuery)
 		if (userData) {
 			setUser(userData)
@@ -92,6 +93,11 @@ export default function Users() {
 			setUser(null)
 			setAppointments([])
 		}
+	}
+
+	const handleEditUser = (data: Partial<User>) => {
+		setUser((prev) => ({ ...prev, ...data }))
+		setIsEditing(false)
 	}
 
 	const formatDate = (dateString: string) => {
@@ -133,99 +139,112 @@ export default function Users() {
 
 				{user && (
 					<div className="space-y-6">
-						<div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-							<div className="bg-gradient-to-r from-indigo-600 to-indigo-800 px-8 py-6">
-								<div className="flex items-center space-x-4">
-									<div className="bg-white/10 rounded-full p-3">
-										<User2 size={32} className="text-white" />
-									</div>
-									<div>
-										<h2 className="text-2xl font-bold text-white">{`${user.nombre} ${user.apellido}`}</h2>
-										<p className="text-indigo-200">{`${user.tipoDocumento}: ${user.documento}`}</p>
-									</div>
-								</div>
-							</div>
-
-							<div className="p-8">
-								<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-									<div className="space-y-6">
-										<div className="flex items-center space-x-3">
-											<Mail className="text-gray-400" size={20} />
-											<div>
-												<p className="text-sm text-gray-500">
-													Correo electrónico
-												</p>
-												<p className="font-medium text-gray-900">
-													{user.correo || 'No registrado'}
-												</p>
-											</div>
+						{isEditing ? (
+							<UserForm
+								user={user}
+								onSubmit={handleEditUser}
+								onCancel={() => setIsEditing(false)}
+							/>
+						) : (
+							<div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+								<div className="bg-gradient-to-r from-indigo-600 to-indigo-800 px-8 py-6">
+									<div className="flex items-center space-x-4">
+										<div className="bg-white/10 rounded-full p-3">
+											<User2 size={32} className="text-white" />
 										</div>
-
-										<div className="flex items-center space-x-3">
-											<Phone className="text-gray-400" size={20} />
-											<div>
-												<p className="text-sm text-gray-500">Teléfono</p>
-												<p className="font-medium text-gray-900">
-													{user.telefonoPersonal}
-												</p>
-											</div>
-										</div>
-									</div>
-
-									<div className="space-y-6">
-										<div className="flex items-center space-x-3">
-											<Calendar className="text-gray-400" size={20} />
-											<div>
-												<p className="text-sm text-gray-500">
-													Sesiones completadas
-												</p>
-												<p className="font-medium text-gray-900">
-													{user.sesion}
-												</p>
-											</div>
-										</div>
-
 										<div>
-											<p className="text-sm text-gray-500 mb-2">
-												Estado actual
-											</p>
-											<span
-												className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-													user.estado
-														? 'bg-green-100 text-green-800'
-														: 'bg-red-100 text-red-800'
-												}`}
-											>
-												{user.estado ? '● Activo' : '● Inactivo'}
-											</span>
+											<h2 className="text-2xl font-bold text-white">{`${user.nombre} ${user.apellido}`}</h2>
+											<p className="text-indigo-200">{`${user.tipoDocumento}: ${user.documento}`}</p>
 										</div>
 									</div>
 								</div>
 
-								<div className="mt-8 pt-6 border-t border-gray-100">
-									<h3 className="text-lg font-semibold text-gray-900 mb-4">
-										Información adicional
-									</h3>
-									<div className="bg-gray-50 rounded-xl p-4">
-										<p className="text-sm text-gray-600 mb-2">
-											Motivo de consulta
-										</p>
-										<p className="text-gray-900">
-											{user.motivo || 'No especificado'}
-										</p>
+								<div className="p-8">
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+										<div className="space-y-6">
+											<div className="flex items-center space-x-3">
+												<Mail className="text-gray-400" size={20} />
+												<div>
+													<p className="text-sm text-gray-500">
+														Correo electrónico
+													</p>
+													<p className="font-medium text-gray-900">
+														{user.correo || 'No registrado'}
+													</p>
+												</div>
+											</div>
+
+											<div className="flex items-center space-x-3">
+												<Phone className="text-gray-400" size={20} />
+												<div>
+													<p className="text-sm text-gray-500">
+														Teléfono
+													</p>
+													<p className="font-medium text-gray-900">
+														{user.telefonoPersonal}
+													</p>
+												</div>
+											</div>
+										</div>
+
+										<div className="space-y-6">
+											<div className="flex items-center space-x-3">
+												<Calendar className="text-gray-400" size={20} />
+												<div>
+													<p className="text-sm text-gray-500">
+														Sesiones completadas
+													</p>
+													<p className="font-medium text-gray-900">
+														{user.sesion}
+													</p>
+												</div>
+											</div>
+
+											<div>
+												<p className="text-sm text-gray-500 mb-2">
+													Estado actual
+												</p>
+												<span
+													className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+														user.estado
+															? 'bg-green-100 text-green-800'
+															: 'bg-red-100 text-red-800'
+													}`}
+												>
+													{user.estado ? '● Activo' : '● Inactivo'}
+												</span>
+											</div>
+										</div>
+									</div>
+
+									<div className="mt-8 pt-6 border-t border-gray-100">
+										<h3 className="text-lg font-semibold text-gray-900 mb-4">
+											Información adicional
+										</h3>
+										<div className="bg-gray-50 rounded-xl p-4">
+											<p className="text-sm text-gray-600 mb-2">
+												Motivo de consulta
+											</p>
+											<p className="text-gray-900">
+												{user.motivo || 'No especificado'}
+											</p>
+										</div>
+									</div>
+
+									<div className="mt-8 flex space-x-4">
+										<button
+											onClick={() => setIsEditing(true)}
+											className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200 flex items-center space-x-2"
+										>
+											<span>Editar información</span>
+										</button>
+										<button className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2">
+											<span>Realizar Checkout</span>
+										</button>
 									</div>
 								</div>
-
-								<div className="mt-8 flex space-x-4">
-									<button className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200 flex items-center space-x-2">
-										<span>Editar información</span>
-									</button>
-									<button className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2">
-										<span>Realizar Checkout</span>
-									</button>
-								</div>
 							</div>
-						</div>
+						)}
 
 						{/* Historial de citas */}
 						<div className="bg-white rounded-2xl shadow-lg overflow-hidden">

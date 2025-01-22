@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Calendar, Clock, User2, Building2 } from 'lucide-react'
 import type { Appointment } from '../types'
 
