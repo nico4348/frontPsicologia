@@ -23,13 +23,7 @@ export default function PractitionerForm({
 			estrato: formData.get('estrato') as string,
 			barrio: formData.get('barrio') as string,
 			localidad: formData.get('localidad') as string,
-			horario: {
-				lunes: formData.getAll('horario_lunes'),
-				martes: formData.getAll('horario_martes'),
-				miércoles: formData.getAll('horario_miercoles'),
-				jueves: formData.getAll('horario_jueves'),
-				viernes: formData.getAll('horario_viernes'),
-			},
+			horario: formData.get('horario') as string
 		}
 		onSubmit(data)
 	}
@@ -130,34 +124,14 @@ export default function PractitionerForm({
 			</div>
 
 			<div>
-				<label className="block text-sm font-medium text-gray-700 mb-2">
-					Horario disponible
-				</label>
-				<div className="space-y-4">
-					{['lunes', 'martes', 'miércoles', 'jueves', 'viernes'].map((dia) => (
-						<div key={dia} className="flex items-center space-x-4">
-							<span className="w-24 text-sm font-medium text-gray-700 capitalize">
-								{dia}
-							</span>
-							<div className="flex-1 grid grid-cols-2 gap-4">
-								<input
-									type="text"
-									name={`horario_${dia}`}
-									placeholder="8:00-12:00"
-									defaultValue={practitioner?.horario?.[dia]?.[0]}
-									className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-								/>
-								<input
-									type="text"
-									name={`horario_${dia}`}
-									placeholder="14:00-18:00"
-									defaultValue={practitioner?.horario?.[dia]?.[1]}
-									className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-								/>
-							</div>
-						</div>
-					))}
-				</div>
+				<label className="block text-sm font-medium text-gray-700">Horario</label>
+				<input
+					type="text"
+					name="horario"
+					defaultValue={practitioner?.horario}
+					className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+					required
+				/>
 			</div>
 
 			<div className="flex justify-end space-x-4">

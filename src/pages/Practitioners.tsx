@@ -1,78 +1,46 @@
 import { useState } from 'react'
 import SearchBar from '../components/SearchBar'
-import { UserPlus, MapPin, Users, Briefcase, Calendar } from 'lucide-react'
+import { UserPlus, Briefcase, MapPin, Users, Calendar } from 'lucide-react'
 import type { Practitioner, Appointment } from '../types'
 import axios from 'axios'
 
-// const samplePractitioner: Practitioner = {
-//   idPracticante: "1",
-//   numero_documento: "98765432",
-//   tipo_documento: "CC",
-//   nombre: "Carlos Ramírez",
-//   genero: "Masculino",
-//   estrato: "4",
-//   barrio: "El Poblado",
-//   localidad: "Medellín",
-//   horario: {
-//     lunes: ["8:00-12:00", "14:00-18:00"],
-//     martes: ["8:00-12:00", "14:00-18:00"],
-//     miércoles: ["8:00-12:00", "14:00-18:00"]
-//   },
-//   sesiones: 45
-// };
 
-const sampleAppointments: Appointment[] = [
-	{
-		idCita: '1',
-		idConsultorio: '1',
-		idUsuario: '1',
-		idPracticante: '1',
-		fechaHora: '2024-03-20 09:00',
-		estado: 'completada',
-		consultorio: { idConsultorio: '1', nombre: 'Consultorio 101', activo: true },
-		usuario: {
-			idUsuario: '1',
-			nombre: 'María',
-			apellido: 'González',
-			telefonoPersonal: '3001234567',
-			tipoDocumento: 'CC',
-			testActual: 'ghq12',
-			flujo: 'register',
-			sesion: 3,
-			estado: true,
-			disponibilidad: {},
-			ayudaPsicologica: 1,
-			tratDatos: true,
-		},
-	},
-	{
-		idCita: '2',
-		idConsultorio: '2',
-		idUsuario: '2',
-		idPracticante: '1',
-		fechaHora: '2024-03-19 10:30',
-		estado: 'completada',
-		consultorio: { idConsultorio: '2', nombre: 'Consultorio 102', activo: true },
-		usuario: {
-			idUsuario: '2',
-			nombre: 'Juan',
-			apellido: 'Pérez',
-			telefonoPersonal: '3009876543',
-			tipoDocumento: 'CC',
-			testActual: 'ghq12',
-			flujo: 'register',
-			sesion: 1,
-			estado: true,
-			disponibilidad: {},
-			ayudaPsicologica: 1,
-			tratDatos: true,
-		},
-	},
-]
 export default function Practitioners() {
 	const [searchQuery, setSearchQuery] = useState('')
 	const [practitioner, setPractitioner] = useState<Practitioner | null>(null)
 	const [appointments, setAppointments] = useState<Appointment[]>([])
+	const [isModalOpen, setIsModalOpen] = useState(false)
+	const [isEditing, setIsEditing] = useState(false)
+
+	const formatHorario = (horario: Record<string, string[]>) => {
+		const daysMapping: Record<string, string> = {
+			'lunes': 'lun',
+			'martes': 'mar',
+			'miércoles': 'mie',
+			'jueves': 'jue',
+			'viernes': 'vie'
+		}
+
+		return Object.entries(horario).reduce((acc, [day, hours]) => {
+			const shortDay = daysMapping[day]
+			if (shortDay && hours.length > 0) {
+				acc[shortDay] = hours
+			}
+			return acc
+		}, {} as Record<string, string[]>)
+	}
+
+	const [formData, setFormData] = useState<Partial<Practitioner>>({
+		nombre: '',
+		numero_documento: '',
+		tipo_documento: '',
+		genero: '',
+		estrato: '',
+		barrio: '',
+		localidad: '',
+		horario: '',
+	});
+
 
 	const queryBd = async (searchQuery: string) => {
 		try {
@@ -86,28 +54,108 @@ export default function Practitioners() {
 		}
 	}
 
+	const addPractitioner = async () => {
+		try {
+			const response = await axios.post('http://localhost:3000/v1/front/addPracticante', {
+				nombre: formData.nombre,
+				documento: formData.numero_documento,
+				tipoDocumento: formData.tipo_documento,
+				genero: formData.genero,
+				estrato: formData.estrato,
+				barrio: formData.barrio,
+				localidad: formData.localidad,
+				horario: formatHorario(formData.horario)
+			})
+
+			if (response.data) {
+				setIsModalOpen(false)
+				setPractitioner(response.data)
+			}
+		} catch (error) {
+			console.error('Error adding practitioner:', error)
+			alert('Error al agregar el practicante')
+		}
+	}
+
+	const editPractitioner = async () => {
+		try {
+			const response = await axios.post('http://localhost:3000/v1/front/editPracticante', {
+				nombre: formData.nombre,
+				documento: formData.numero_documento,
+				tipoDocumento: formData.tipo_documento,
+				genero: formData.genero,
+				estrato: formData.estrato,
+				barrio: formData.barrio,
+				localidad: formData.localidad,
+				horario: formatHorario(formData.horario || {})
+			})
+
+			if (response.data) {
+				setIsModalOpen(false)
+				setPractitioner(response.data)
+			}
+		} catch (error) {
+			console.error('Error editing practitioner:', error)
+			alert('Error al editar el practicante')
+		}
+	}
+
 	const handleSearch = async () => {
 		console.log(searchQuery)
 		const practitionerData = await queryBd(searchQuery)
 		if (practitionerData) {
 			setPractitioner(practitionerData)
-			setAppointments(sampleAppointments)
+			setAppointments(appointments)
 		} else {
 			setPractitioner(null)
 			setAppointments([])
 		}
 	}
 
-	const formatDate = (dateString: string) => {
-		const date = new Date(dateString)
-		return new Intl.DateTimeFormat('es-CO', {
-			day: 'numeric',
-			month: 'long',
-			hour: 'numeric',
-			minute: 'numeric',
-		}).format(date)
+	const openAddModal = () => {
+		setIsEditing(false)
+		setFormData({
+			nombre: '',
+			numero_documento: '',
+			tipo_documento: '',
+			genero: '',
+			estrato: '',
+			barrio: '',
+			localidad: '',
+			horario: {
+				lunes: [],
+				martes: [],
+				miércoles: [],
+				jueves: [],
+				viernes: []
+			}
+		})
+		setIsModalOpen(true)
 	}
 
+	const openEditModal = () => {
+		if (practitioner) {
+			setIsEditing(true)
+			setFormData({ ...practitioner })
+			setIsModalOpen(true)
+		}
+	}
+
+	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+		const { name, value } = e.target
+		setFormData(prev => ({ ...prev, [name]: value }))
+	}
+
+
+	const handleSubmit = () => {
+		if (isEditing) {
+			editPractitioner()
+		} else {
+			addPractitioner()
+		}
+	}
+
+	
 	return (
 		<div className="p-8">
 			<div className="max-w-6xl mx-auto">
@@ -140,7 +188,7 @@ export default function Practitioners() {
 										<h2 className="text-2xl font-bold text-white">
 											{practitioner.nombre}
 										</h2>
-										<p className="text-green-200">{`${practitioner.tipo_documento}: ${practitioner.numero_documento}`}</p>
+										<p className="text-green-200">{practitioner.tipo_documento}: {practitioner.numero_documento}</p>
 									</div>
 								</div>
 							</div>
@@ -152,7 +200,7 @@ export default function Practitioners() {
 											<MapPin className="text-gray-400" size={20} />
 											<div>
 												<p className="text-sm text-gray-500">Ubicación</p>
-												<p className="font-medium text-gray-900">{`${practitioner.barrio}, ${practitioner.localidad}`}</p>
+												<p className="font-medium text-gray-900">{practitioner.barrio}, {practitioner.localidad}</p>
 											</div>
 										</div>
 
@@ -181,7 +229,7 @@ export default function Practitioners() {
 															{day}
 														</span>
 														<div className="flex flex-wrap gap-2">
-															{hours.map((hour, index) => (
+															{(hours as string[]).map((hour: string, index: number) => (
 																<span
 																	key={index}
 																	className="text-sm bg-white px-3 py-1 rounded-full border border-gray-200"
@@ -212,7 +260,7 @@ export default function Practitioners() {
 													<Calendar className="text-gray-400" size={20} />
 													<div>
 														<p className="font-medium text-gray-900">
-															{formatDate(appointment.fechaHora)}
+															{new Date(appointment.fechaHora).toLocaleDateString()}
 														</p>
 														<p className="text-sm text-gray-500">
 															{appointment.usuario?.nombre}{' '}
@@ -241,4 +289,5 @@ export default function Practitioners() {
 			</div>
 		</div>
 	)
+
 }
