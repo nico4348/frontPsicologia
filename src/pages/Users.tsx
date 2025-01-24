@@ -1,25 +1,27 @@
 import { useState } from 'react'
 import SearchBar from '../components/SearchBar'
 import UserForm from '../components/UserForm'
-import { Phone, Mail, Calendar, User2, Clock, UserPlus } from 'lucide-react'
+import { Phone, Mail, Calendar, User2, UserPlus } from 'lucide-react'
 import type { User, Appointment } from '../types'
 import axios from 'axios'
-
-const showAlert = (message: string) => {
-	alert(message)
-}
-
-const sampleAppointments: Appointment[] = [
-	{
-		idCita: '1',
-		fechaHora: new Date().toISOString(),
-		estado: 'pendiente',
-		consultorio: { nombre: 'Consultorio A' },
-		practicante: { nombre: 'Juan Pérez' }
-	}
-]
+import AlertaPersonalizada from '../components/Alert'
 
 export default function Users() {
+
+    const [mostrarAlerta, setMostrarAlerta] = useState<boolean>(false);
+    const [mensaje, setMensaje] = useState<string>('');
+    const [tipo, setTipo] = useState<'error' | 'exito' | 'advertencia'>('exito'); // Estado para el tipo de alerta
+
+    const showAlert = (mensaje: string, tipo: 'error' | 'exito' | 'advertencia') => {
+        setMensaje(mensaje);
+        setTipo(tipo);
+        setMostrarAlerta(true);
+
+        setTimeout(() => {
+            setMostrarAlerta(false);
+        }, 5000);
+    }
+
     const [searchQuery, setSearchQuery] = useState('')
     const [user, setUser] = useState<User | null>(null)
     const [appointments, setAppointments] = useState<Appointment[]>([])
@@ -53,6 +55,7 @@ export default function Users() {
                     setIsAddingNew(false)
                 }
             }
+
         } catch (error) {
             console.error('Error adding user:', error)
             alert('Error al agregar el usuario')
@@ -74,6 +77,10 @@ export default function Users() {
                 setUser(response.data)
                 setIsEditing(false)
             }
+
+            setUser(response.data)
+            showAlert('Usuario Editado exitosamente',"exito")
+
         } catch (error) {
             console.error('Error editing user:', error)
             alert('Error al editar el usuario')
@@ -84,7 +91,7 @@ export default function Users() {
         const userData = await queryBd(searchQuery)
         if (userData) {
             setUser(userData)
-            setAppointments(sampleAppointments)
+            setAppointments(appointments)
         } else {
             setUser(null)
             setAppointments([])
@@ -129,17 +136,25 @@ export default function Users() {
 
     return (
         <div className="p-8">
+
+            <AlertaPersonalizada
+                mensaje={mensaje}
+                tipo={tipo}
+                mostrar={mostrarAlerta}
+                cerrarAlerta={() => setMostrarAlerta(false)}
+            />
+
             <div className="max-w-6xl mx-auto">
-			<div className="flex justify-between items-center mb-8">
-					<h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
-					<button
-						onClick={openAddUserModal}
-						className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
-					>
-						<UserPlus size={20} />
-						<span>Nuevo Usuario</span>
-					</button>
-				</div>
+                <div className="flex justify-between items-center mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
+                    <button
+                        onClick={openAddUserModal}
+                        className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+                    >
+                        <UserPlus size={20} />
+                        <span>Nuevo Usuario</span>
+                    </button>
+                </div>
 
                 <div className="mb-8">
                     <SearchBar
@@ -222,11 +237,10 @@ export default function Users() {
                                                     Estado actual
                                                 </p>
                                                 <span
-                                                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                                                        user?.estado
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : 'bg-red-100 text-red-800'
-                                                    }`}
+                                                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${user?.estado
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : 'bg-red-100 text-red-800'
+                                                        }`}
                                                 >
                                                     {user?.estado ? '● Activo' : '● Inactivo'}
                                                 </span>
@@ -241,7 +255,7 @@ export default function Users() {
                                         >
                                             <span>Editar información</span>
                                         </button>
-                                        <button onClick={() => showAlert('Checkout realizado')} className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2">
+                                        <button onClick={() => showAlert("Checkout Realizado", "exito")} className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2">
                                             <span>Realizar Checkout</span>
                                         </button>
                                     </div>
