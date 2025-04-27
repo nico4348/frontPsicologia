@@ -23,7 +23,7 @@ export default function PractitionerForm({
 			estrato: formData.get('estrato') as string,
 			barrio: formData.get('barrio') as string,
 			localidad: formData.get('localidad') as string,
-			horario: formData.get('horario') as string
+			horario: formData.get('horario') as string,
 		}
 		onSubmit(data)
 	}
@@ -57,6 +57,7 @@ export default function PractitionerForm({
 						<option value="TI">Tarjeta de Identidad</option>
 					</select>
 				</div>
+
 				<div>
 					<label className="block text-sm font-medium text-gray-700">
 						Número de documento
@@ -85,6 +86,7 @@ export default function PractitionerForm({
 						<option value="Otro">Otro</option>
 					</select>
 				</div>
+
 				<div>
 					<label className="block text-sm font-medium text-gray-700">Estrato</label>
 					<select
@@ -112,6 +114,7 @@ export default function PractitionerForm({
 					required
 				/>
 			</div>
+
 			<div>
 				<label className="block text-sm font-medium text-gray-700">Localidad</label>
 				<input
@@ -123,8 +126,10 @@ export default function PractitionerForm({
 				/>
 			</div>
 
-			{/* <div>
-				<label className="block text-sm font-medium text-gray-700">Horario</label>
+			<div>
+				<label className="block text-sm font-medium text-gray-700">
+					Horario (días y horas)
+				</label>
 				<input
 					type="text"
 					name="horario"
@@ -132,7 +137,7 @@ export default function PractitionerForm({
 					className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
 					required
 				/>
-			</div> */}
+			</div>
 
 			<div className="flex justify-end space-x-4">
 				<button

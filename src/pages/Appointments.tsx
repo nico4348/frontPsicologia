@@ -1,82 +1,25 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Calendar, Clock, User2, Building2 } from 'lucide-react'
 import type { Appointment } from '../types'
-
-const sampleAppointments: Appointment[] = [
-	{
-		idCita: '1',
-		idConsultorio: '1',
-		idUsuario: '1',
-		idPracticante: '1',
-		fechaHora: '2024-03-20 09:00',
-		estado: 'pendiente',
-		consultorio: { idConsultorio: '1', nombre: 'Consultorio 101', activo: true },
-		usuario: {
-			idUsuario: '1',
-			nombre: 'María',
-			apellido: 'González',
-			telefonoPersonal: '3001234567',
-			tipoDocumento: 'CC',
-			testActual: 'ghq12',
-			flujo: 'register',
-			sesion: 3,
-			estado: true,
-			disponibilidad: {},
-			ayudaPsicologica: 1,
-			tratDatos: true,
-		},
-		practicante: {
-			idPracticante: '1',
-			numero_documento: '98765432',
-			tipo_documento: 'CC',
-			nombre: 'Carlos Ramírez',
-			genero: 'Masculino',
-			estrato: '4',
-			barrio: 'El Poblado',
-			localidad: 'Medellín',
-			horario: {},
-			sesiones: 45,
-		},
-	},
-	{
-		idCita: '2',
-		idConsultorio: '2',
-		idUsuario: '2',
-		idPracticante: '2',
-		fechaHora: '2024-03-20 10:30',
-		estado: 'completada',
-		consultorio: { idConsultorio: '2', nombre: 'Consultorio 102', activo: true },
-		usuario: {
-			idUsuario: '2',
-			nombre: 'Juan',
-			apellido: 'Pérez',
-			telefonoPersonal: '3009876543',
-			tipoDocumento: 'CC',
-			testActual: 'ghq12',
-			flujo: 'register',
-			sesion: 1,
-			estado: true,
-			disponibilidad: {},
-			ayudaPsicologica: 1,
-			tratDatos: true,
-		},
-		practicante: {
-			idPracticante: '2',
-			numero_documento: '12345678',
-			tipo_documento: 'CC',
-			nombre: 'Ana Martínez',
-			genero: 'Femenino',
-			estrato: '3',
-			barrio: 'Laureles',
-			localidad: 'Medellín',
-			horario: {},
-			sesiones: 32,
-		},
-	},
-]
+import axios from 'axios'
 
 export default function Appointments() {
-	const [appointments] = useState<Appointment[]>(sampleAppointments)
+	const [appointments, setAppointments] = useState<Appointment[]>([])
+
+	useEffect(() => {
+		fetch('http://localhost:3000/v1/front/citas')
+			.then((res) => res.json())
+			.then((data) => {
+				if (Array.isArray(data)) {
+					setAppointments(data)
+				} else {
+					console.error('Respuesta inesperada:', data)
+				}
+			})
+			.catch((error) => {
+				console.error('Error obteniendo citas:', error)
+			})
+	}, [])
 
 	const getStatusColor = (status: string) => {
 		switch (status) {
@@ -160,8 +103,9 @@ export default function Appointments() {
 													appointment.estado
 												)}`}
 											>
-												{appointment.estado.charAt(0).toUpperCase() +
-													appointment.estado.slice(1)}
+												{appointment.estado?.charAt(0).toUpperCase() +
+													appointment.estado?.slice(1) ||
+													'Estado desconocido'}
 											</span>
 										</div>
 									</div>
